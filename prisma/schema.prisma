@@ -1,0 +1,141 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  name      String
+  email     String   @unique
+  password  String
+}
+
+model Category {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  name      String
+  Item      Item[]
+}
+
+model FavoriteItem {
+  id     Int  @id @default(autoincrement())
+  userId Int
+  itemId Int
+  Item   Item @relation(fields: [itemId], references: [id])
+  User   User @relation(fields: [userId], references: [id])
+}
+
+model FavoriteOutfit {
+  id       Int    @id @default(autoincrement())
+  userId   Int
+  outfitId Int
+  Outfit   Outfit @relation(fields: [outfitId], references: [id])
+  User     User   @relation(fields: [userId], references: [id])
+}
+
+model Item {
+  id                    Int            @id @default(autoincrement())
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime
+  materialId            Int
+  name                  String
+  sku                   String?
+  brand                 String
+  categoryId            Int
+  fit                   EFit
+  color                 String
+  imageUrl              String?
+  additionalDescription String?
+  FavoriteItem          FavoriteItem[]
+  Category              Category       @relation(fields: [categoryId], references: [id])
+  Material              Material       @relation(fields: [materialId], references: [id])
+  OutfitItem            OutfitItem[]
+}
+
+model Material {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  name      String
+  Item      Item[]
+}
+
+model Outfit {
+  id             Int              @id @default(autoincrement())
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime
+  name           String
+  styleId        Int
+  season         ESeason
+  tone           ETone
+  FavoriteOutfit FavoriteOutfit[]
+  Style          Style            @relation(fields: [styleId], references: [id])
+  OutfitItem     OutfitItem[]
+}
+
+model OutfitItem {
+  id       Int    @id @default(autoincrement())
+  outfitId Int
+  itemId   Int
+  Item     Item   @relation(fields: [itemId], references: [id])
+  Outfit   Outfit @relation(fields: [outfitId], references: [id])
+}
+
+model Style {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  name      String
+  Outfit    Outfit[]
+}
+
+model User {
+  id             Int              @id @default(autoincrement())
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime
+  name           String
+  email          String           @unique
+  profileImage   String?
+  password       String
+  age            Int
+  gender         EGender
+  height         Float?
+  chest          Float?
+  shoulder       Float?
+  torsoLength    Float?
+  waist          Float?
+  FavoriteItem   FavoriteItem[]
+  FavoriteOutfit FavoriteOutfit[]
+}
+
+enum EFit {
+  OVERSIZE
+  REGULAR
+  SLIM
+}
+
+enum EGender {
+  MALE
+  FEMALE
+}
+
+enum ESeason {
+  WINTER
+  SPRING
+  SUMMER
+  AUTUMN
+}
+
+enum ETone {
+  WARM
+  COOL
+  NEUTRAL
+}
