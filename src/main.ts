@@ -4,7 +4,7 @@ import { AllExceptionsFilter } from './all-exceptions';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    logger: ['error', 'fatal'],
+    logger: ['error', 'fatal', 'log', 'warn', 'debug', 'verbose'],
   });
   app.enableCors();
   app.setGlobalPrefix('admin/api');

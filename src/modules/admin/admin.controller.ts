@@ -6,41 +6,48 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
+  ParseIntPipe,
+  ValidationPipe,
 } from '@nestjs/common';
 import { AdminService } from './admin.service';
 // import { CreateAdminDto } from './dto/create-admin.dto';
 // import { UpdateAdminDto } from './dto/update-admin.dto';
-import { Prisma } from '../../../generated/prisma';
+import { CreateAdminDto } from './dto/create-admin.dto';
+import { UpdateAdminDto } from './dto/update-admin.dto';
 
 @Controller('admin')
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
   @Post()
-  create(@Body() createAdminDto: Prisma.AdminCreateInput) {
+  create(@Body(ValidationPipe) createAdminDto: CreateAdminDto) {
     return this.adminService.create(createAdminDto);
   }
 
   @Get()
-  findAll() {
-    return this.adminService.findAll();
+  findAll(
+    @Query('page', new ParseIntPipe({ optional: true })) page?: number,
+    @Query('perPage', new ParseIntPipe({ optional: true })) perPage?: number,
+  ) {
+    return this.adminService.findAll(page, perPage);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.adminService.findOne(+id);
+  @Get(':identifier')
+  findOne(@Param('identifier') identifier: string) {
+    return this.adminService.findOne(identifier);
   }
 
   @Patch(':id')
   update(
-    @Param('id') id: string,
-    @Body() updateAdminDto: Prisma.AdminUpdateInput,
+    @Param('id', ParseIntPipe) id: number,
+    @Body(ValidationPipe) updateAdminDto: UpdateAdminDto,
   ) {
-    return this.adminService.update(+id, updateAdminDto);
+    return this.adminService.update(id, updateAdminDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.adminService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.adminService.remove(id);
   }
 }

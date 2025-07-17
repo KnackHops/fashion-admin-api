@@ -1,6 +1,7 @@
 generator client {
-  provider = "prisma-client-js"
-  output   = "../generated/prisma"
+  provider        = "prisma-client-js"
+  output          = "../generated/prisma"
+  previewFeatures = ["typedSql"]
 }
 
 datasource db {
@@ -15,6 +16,7 @@ model Admin {
   name      String
   email     String   @unique
   password  String
+  status    Int      @default(1)
 }
 
 model Category {
@@ -114,6 +116,7 @@ model User {
   waist          Float?
   FavoriteItem   FavoriteItem[]
   FavoriteOutfit FavoriteOutfit[]
+  status         Int              @default(1)
 }
 
 enum EFit {
