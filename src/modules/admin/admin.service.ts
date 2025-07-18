@@ -61,20 +61,26 @@ export class AdminService {
 
     const offset = actualPage * actualPerPage;
     return this.databaseService
-      .$queryRaw`SELECT * FROM "Admin" a ORDER BY a.id ASC LIMIT ${actualPerPage} OFFSET ${offset}`;
+      .$queryRaw`SELECT "id", "createdAt", "updatedAt", "name", "email", "status" FROM "Admin" a ORDER BY a.id ASC LIMIT ${actualPerPage} OFFSET ${offset}`;
   }
 
-  async findOne(identifier: string) {
+  async findOne(identifier: string, showPassword?: boolean) {
     let admin: null | Admin = null;
 
     if (isNaN(+identifier)) {
-      const adminByEmail: Admin[] = await this.databaseService
-        .$queryRaw`SELECT * FROM "Admin" a WHERE a.email LIKE ${identifier.trim()} ORDER BY a.id`;
+      const adminByEmail: Admin[] = showPassword
+        ? await this.databaseService
+            .$queryRaw`SELECT * FROM "Admin" a WHERE a.email LIKE ${identifier.trim()} ORDER BY a.id`
+        : await this.databaseService
+            .$queryRaw`SELECT "id", "createdAt", "updatedAt", "name", "email", "status" FROM "Admin" a WHERE a.email LIKE ${identifier.trim()} ORDER BY a.id`;
 
       if (adminByEmail.length > 0) admin = adminByEmail[0];
     } else {
-      const adminById: Admin[] = await this.databaseService
-        .$queryRaw`SELECT * FROM "Admin" a WHERE a.id = ${+identifier} ORDER BY a.id`;
+      const adminById: Admin[] = showPassword
+        ? await this.databaseService
+            .$queryRaw`SELECT * FROM "Admin" a WHERE a.id = ${+identifier} ORDER BY a.id`
+        : await this.databaseService
+            .$queryRaw`SELECT "id", "createdAt", "updatedAt", "name", "email", "status" FROM "Admin" a WHERE a.id = ${+identifier} ORDER BY a.id`;
 
       if (adminById.length > 0) admin = adminById[0];
     }

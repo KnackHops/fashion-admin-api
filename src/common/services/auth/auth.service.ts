@@ -20,22 +20,22 @@ export class AuthService {
   ) {}
 
   async validateUser(email: string, password: string) {
-    const user = await this.adminService.findOne(email);
+    const user = await this.adminService.findOne(email, true);
 
     if (!user) {
       throw new NotFoundException(userNotFoundErr);
     }
 
-    const isMatch = await this.hashService.comparePassword(
-      password,
-      user.password,
-    );
+    const { password: userHash, ...rest } = user;
+
+    const isMatch = await this.hashService.comparePassword(password, userHash);
 
     if (!isMatch) {
       throw new UnauthorizedException(passwordNotMatchErr);
     }
 
-    return user;
+    // no password for any user object we send to the client
+    return rest;
   }
 
   login(user: Admin) {
