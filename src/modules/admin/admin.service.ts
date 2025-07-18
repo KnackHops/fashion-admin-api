@@ -11,23 +11,30 @@ import {
   emailExistsErr,
   userExistsErr,
   userNotFoundErr,
-} from 'src/common/errorMessages';
+} from 'src/common/constants';
 import { PrismaClientKnownRequestError } from 'generated/prisma/runtime/library';
+import { HashService } from 'src/common/services/auth/hash.service';
 
 @Injectable()
 export class AdminService {
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(
+    private readonly databaseService: DatabaseService,
+    private readonly hashService: HashService,
+  ) {}
 
   async create(createAdminDto: CreateAdminDto) {
-    // const exist = await this.findOne(createAdminDto.email).catch(() => null);
+    const exist = await this.findOne(createAdminDto.email).catch(() => null);
 
-    // if (exist) {
-    //   throw new ConflictException(userExistsErr);
-    // }
+    if (exist) {
+      throw new ConflictException(userExistsErr);
+    }
+    const { hash } = await this.hashService.generateAndHashPassword(
+      createAdminDto.password,
+    );
 
     return this.databaseService
       .$executeRaw`INSERT INTO "Admin" ("name", "email", "password", "updatedAt")
-      VALUES (${createAdminDto.name},${createAdminDto.email},${createAdminDto.password}, now())`
+      VALUES (${createAdminDto.name},${createAdminDto.email},${hash}, now())`
       .then(() => {
         return this.findOne(createAdminDto.email);
       })
@@ -94,11 +101,12 @@ export class AdminService {
     }
     if (updateAdminDto?.name && updateAdminDto.name !== adminToUpdate.name)
       updateColumn = `${updateColumn ? `${updateColumn}, ` : ''}"name" = '${updateAdminDto.name}'`;
-    if (
-      updateAdminDto?.password &&
-      updateAdminDto.password !== adminToUpdate.password
-    )
-      updateColumn = `${updateColumn ? `${updateColumn}, ` : ''}"password" = '${updateAdminDto.password}'`;
+    if (updateAdminDto?.password) {
+      const { hash } = await this.hashService.generateAndHashPassword(
+        updateAdminDto.password,
+      );
+      updateColumn = `${updateColumn ? `${updateColumn}, ` : ''}"password" = '${hash}'`;
+    }
 
     if (!updateColumn) return adminToUpdate;
 

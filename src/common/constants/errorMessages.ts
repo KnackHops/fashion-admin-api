@@ -7,6 +7,7 @@ export const emailExistsErr = 'Email already exists.';
 // Password Related Error Messages //
 export const passwordLengthErr = 'Password length must be 10 ore more.';
 export const passwordContainSpacesErr = 'Password cannot contain spaces';
+export const passwordNotMatchErr = 'Password does not match.';
 
 // User Related Error Messages //
 export const userExistsErr = 'User already exists.';

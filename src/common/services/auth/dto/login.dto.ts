@@ -1,23 +1,13 @@
-import {
-  IsEmail,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  Matches,
-  MinLength,
-} from 'class-validator';
-import { Prisma } from '../../../../generated/prisma';
 import { Transform } from 'class-transformer';
+import { IsEmail, IsString, Matches, MinLength } from 'class-validator';
 import {
   emailContainSpacesErr,
   passwordContainSpacesErr,
   passwordLengthErr,
   provideValidEmailErr,
-} from 'src/common/constants/errorMessages';
+} from 'src/common/constants';
 
-export class CreateAdminDto
-  implements Pick<Prisma.AdminCreateInput, 'email' | 'name' | 'password'>
-{
+export class LoginDto {
   @IsEmail(undefined, { message: provideValidEmailErr })
   @Matches(/^\S*$/, { message: emailContainSpacesErr })
   @Transform(({ value }) => {
@@ -25,16 +15,8 @@ export class CreateAdminDto
   })
   email: string;
 
-  @IsNotEmpty()
-  @IsString()
-  @Transform(({ value }) => {
-    if (typeof value === 'string') return value.trim();
-  })
-  name: string;
-
   @IsString()
   @MinLength(10, { message: passwordLengthErr })
   @Matches(/^\S*$/, { message: passwordContainSpacesErr })
-  @IsOptional()
   password: string;
 }
