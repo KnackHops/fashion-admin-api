@@ -35,7 +35,8 @@ export class AdminController {
 
   @Get(':identifier')
   findOne(@Param('identifier') identifier: string) {
-    return this.adminService.findOne(identifier);
+    // explicitly declare showPassword is false
+    return this.adminService.findOne(identifier, false);
   }
 
   @Patch(':id')

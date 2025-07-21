@@ -33,8 +33,8 @@ export class AdminService {
     );
 
     return this.databaseService
-      .$executeRaw`INSERT INTO "Admin" ("name", "email", "password", "updatedAt")
-      VALUES (${createAdminDto.name},${createAdminDto.email},${hash}, now())`
+      .$executeRaw`INSERT INTO "Admin" ("name", "email", "password")
+      VALUES (${createAdminDto.name},${createAdminDto.email},${hash})`
       .then(() => {
         return this.findOne(createAdminDto.email);
       })
@@ -91,7 +91,7 @@ export class AdminService {
   }
 
   async update(id: number, updateAdminDto: UpdateAdminDto) {
-    const adminToUpdate = await this.findOne(`${id}`).catch(() => null);
+    const adminToUpdate = await this.findOne(`${id}`);
 
     if (!adminToUpdate) {
       throw new NotFoundException(userNotFoundErr);
@@ -118,7 +118,7 @@ export class AdminService {
 
     return await this.databaseService
       .$executeRawUnsafe(
-        `UPDATE "Admin" a SET ${updateColumn.trim()}, "updatedAt"=now() WHERE a.id = ${id}`,
+        `UPDATE "Admin" a SET ${updateColumn.trim()} WHERE a.id = ${id}`,
       )
       .then(() => {
         return this.findOne(`${id}`).catch(() => null);

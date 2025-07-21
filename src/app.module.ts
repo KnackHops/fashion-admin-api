@@ -7,10 +7,16 @@ import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './common/services/auth/jwt-auth.guard';
 import { JwtStrategy } from './common/services/auth/jwt.strategy';
+import { UserModule } from './modules/user/user.module';
 // import { DatabaseModule } from './core/database/database.module';
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), AdminModule, AuthModule],
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    AuthModule,
+    AdminModule,
+    UserModule,
+  ],
   controllers: [AppController],
   providers: [
     AppService,

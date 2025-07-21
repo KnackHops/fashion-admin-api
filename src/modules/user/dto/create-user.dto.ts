@@ -18,7 +18,19 @@ export class CreateUserDto
   implements
     Pick<
       Prisma.UserCreateInput,
-      'name' | 'email' | 'password' | 'age' | 'gender'
+      | 'name'
+      | 'email'
+      | 'password'
+      | 'age'
+      | 'gender'
+      | 'profileImage'
+      | 'FavoriteItem'
+      | 'FavoriteOutfit'
+      | 'height'
+      | 'chest'
+      | 'shoulder'
+      | 'torsoLength'
+      | 'waist'
     >
 {
   @IsNotEmpty()
@@ -40,4 +52,35 @@ export class CreateUserDto
 
   @IsEnum($Enums.EGender, { message: 'Invalid Gender' })
   gender: $Enums.EGender;
+
+  @IsOptional()
+  profileImage?: string | null | undefined;
+
+  FavoriteItem?:
+    | Prisma.FavoriteItemCreateNestedManyWithoutUserInput
+    | undefined;
+
+  FavoriteOutfit?:
+    | Prisma.FavoriteOutfitCreateNestedManyWithoutUserInput
+    | undefined;
+
+  @IsInt()
+  @IsOptional()
+  height?: number | null | undefined;
+
+  @IsInt()
+  @IsOptional()
+  chest?: number | null | undefined;
+
+  @IsInt()
+  @IsOptional()
+  shoulder?: number | null | undefined;
+
+  @IsInt()
+  @IsOptional()
+  torsoLength?: number | null | undefined;
+
+  @IsInt()
+  @IsOptional()
+  waist?: number | null | undefined;
 }
