@@ -65,24 +65,13 @@ export class CategoryService {
 
   async findOne(identifier: string) {
     let id: number | undefined = undefined;
-    let nameSearch: string | undefined = undefined;
+    let name: string | undefined = undefined;
 
-    if (isNaN(+identifier)) nameSearch = identifier;
+    if (isNaN(+identifier)) name = identifier;
     else id = +identifier;
 
     const category = await this.databaseService.category.findFirst({
-      where: {
-        OR: [
-          {
-            id,
-          },
-          {
-            name: {
-              search: nameSearch,
-            },
-          },
-        ],
-      },
+      where: { id, name },
     });
 
     if (!category) {

@@ -7,7 +7,6 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { DatabaseService } from 'src/core/database/database.service';
 import { HashService } from 'src/common/services/auth/hash.service';
-import { User } from 'generated/prisma';
 import { emailExistsErr, userNotFoundErr } from 'src/common/constants';
 
 @Injectable()
@@ -76,21 +75,15 @@ export class UserService {
   }
 
   async findOne(identifier: string) {
-    let user: User | null = null;
+    let id: number | undefined = undefined;
+    let email: string | undefined = undefined;
 
-    if (isNaN(+identifier)) {
-      user = await this.databaseService.user.findFirst({
-        where: {
-          id: +identifier,
-        },
-      });
-    } else {
-      user = await this.databaseService.user.findFirst({
-        where: {
-          email: identifier,
-        },
-      });
-    }
+    if (isNaN(+identifier)) email = identifier;
+    else id = +identifier;
+
+    const user = await this.databaseService.user.findFirst({
+      where: { id, email },
+    });
 
     if (!user) {
       throw new NotFoundException(userNotFoundErr);
