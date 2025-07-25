@@ -154,13 +154,11 @@ export class AdminService {
         `UPDATE "Admin" a SET ${updateColumn.trim()} WHERE a.id = ${id}`,
       )
       .then(() => {
-        return this.findOne(`${id}`).catch(() => null);
+        return this.findOne(`${id}`);
       });
   }
 
   remove(id: number) {
-    return this.databaseService.admin.delete({
-      where: { id },
-    });
+    return `This action removes a #${id} admin`;
   }
 }

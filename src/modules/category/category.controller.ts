@@ -8,6 +8,7 @@ import {
   Delete,
   ValidationPipe,
   ParseIntPipe,
+  Query,
 } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
@@ -23,13 +24,17 @@ export class CategoryController {
   }
 
   @Get()
-  findAll() {
-    return this.categoryService.findAll();
+  findAll(
+    @Query('page', new ParseIntPipe({ optional: true })) page?: number,
+    @Query('perPage', new ParseIntPipe({ optional: true })) perPage?: number,
+    @Query('search') search?: string,
+  ) {
+    return this.categoryService.findAll(page, perPage, search);
   }
 
-  @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.categoryService.findOne(id);
+  @Get(':identifier')
+  findOne(@Param('identifier') identifier: string) {
+    return this.categoryService.findOne(identifier);
   }
 
   @Patch(':id')

@@ -1,7 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { DatabaseService } from 'src/core/database/database.service';
+import { categoryExistsErr, categoryNotFoundErr } from 'src/common/constants';
 
 @Injectable()
 export class CategoryService {
@@ -10,20 +15,98 @@ export class CategoryService {
   async create(createCategoryDto: CreateCategoryDto) {
     const name = createCategoryDto.name.toLowerCase();
 
+    const exist = await this.findOne(name);
+
+    if (exist) {
+      throw new ConflictException(categoryExistsErr);
+    }
+
     return this.databaseService.category.create({ data: createCategoryDto });
   }
 
-  findAll() {
-    return `This action returns all category`;
+  findAll(page?: number, perPage?: number, search?: string) {
+    let actualPage = 0;
+    const take = perPage || 10;
+
+    if (page) if (page > 0) actualPage = page - 1;
+
+    const skip = actualPage * take;
+
+    const idSearch = search
+      ? isNaN(+search)
+        ? undefined
+        : +search
+      : undefined;
+
+    return this.databaseService.category.findMany({
+      ...(search || idSearch
+        ? {
+            where: {
+              OR: [
+                {
+                  id: idSearch,
+                },
+                {
+                  name: {
+                    search: search,
+                  },
+                },
+              ],
+            },
+          }
+        : {}),
+      orderBy: {
+        id: 'asc',
+      },
+      skip,
+      take,
+    });
   }
 
-  findOne(id: number) {
-    return id;
+  async findOne(identifier: string) {
+    let id: number | undefined = undefined;
+    let nameSearch: string | undefined = undefined;
+
+    if (isNaN(+identifier)) nameSearch = identifier;
+    else id = +identifier;
+
+    const category = await this.databaseService.category.findFirst({
+      where: {
+        OR: [
+          {
+            id,
+          },
+          {
+            name: {
+              search: nameSearch,
+            },
+          },
+        ],
+      },
+    });
+
+    if (!category) {
+      throw new NotFoundException(categoryNotFoundErr);
+    }
+
+    return category;
   }
 
-  update(id: number, updateCategoryDto: UpdateCategoryDto) {
-    console.log(updateCategoryDto);
-    return `This action updates a #${id} category`;
+  async update(id: number, updateCategoryDto: UpdateCategoryDto) {
+    const exist = await this.findOne(`${id}`);
+
+    if (!exist) {
+      throw new NotFoundException(categoryNotFoundErr);
+    }
+
+    return this.databaseService.category
+      .update({
+        data: updateCategoryDto,
+        where: {
+          id,
+        },
+      })
+      .then(() => this.findOne(`${id}`));
   }
 
   remove(id: number) {

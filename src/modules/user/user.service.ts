@@ -35,11 +35,43 @@ export class UserService {
     });
   }
 
-  findAll() {
+  findAll(page?: number, perPage?: number, search?: string) {
+    let actualPage = 0;
+    const take = perPage || 10;
+
+    if (page) if (page > 0) actualPage = page - 1;
+
+    const skip = actualPage * take;
+
+    const idSearch = search
+      ? isNaN(+search)
+        ? undefined
+        : +search
+      : undefined;
+
     return this.databaseService.user.findMany({
+      ...(search || idSearch
+        ? {
+            where: {
+              OR: [
+                {
+                  id: idSearch,
+                },
+                {
+                  name: { search },
+                },
+                {
+                  email: { search },
+                },
+              ],
+            },
+          }
+        : {}),
       orderBy: {
         id: 'asc',
       },
+      skip,
+      take,
     });
   }
 
@@ -78,19 +110,17 @@ export class UserService {
     const { password, ...data } = updateUserDto;
     // omit password for the update method
 
-    return this.databaseService.user.update({
-      where: {
-        id,
-      },
-      data,
-    });
+    return this.databaseService.user
+      .update({
+        where: {
+          id,
+        },
+        data,
+      })
+      .then(() => this.findOne(`${id}`));
   }
 
   remove(id: number) {
-    return this.databaseService.user.delete({
-      where: {
-        id,
-      },
-    });
+    return `This action removes a #${id} user`;
   }
 }

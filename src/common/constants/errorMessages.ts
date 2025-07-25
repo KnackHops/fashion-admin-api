@@ -12,3 +12,7 @@ export const passwordNotMatchErr = 'Password does not match.';
 // User Related Error Messages //
 export const userExistsErr = 'User already exists.';
 export const userNotFoundErr = 'User not found.';
+
+// Category Related Error Messages //
+export const categoryExistsErr = 'Category already exists.';
+export const categoryNotFoundErr = 'Category not found.';
