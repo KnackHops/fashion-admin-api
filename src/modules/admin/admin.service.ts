@@ -33,8 +33,8 @@ export class AdminService {
     );
 
     return this.databaseService
-      .$executeRaw`INSERT INTO "Admin" ("name", "email", "password")
-      VALUES (${createAdminDto.name},${createAdminDto.email},${hash})`
+      .$executeRaw`INSERT INTO "Admin" ("name", "email", "password", "updatedAt")
+      VALUES (${createAdminDto.name},${createAdminDto.email},${hash}, now())`
       .then(() => {
         return this.findOne(createAdminDto.email);
       })
@@ -103,18 +103,20 @@ export class AdminService {
 
       if (exists) throw new ConflictException(emailExistsErr);
 
-      updateColumn = `"email" = '${updateAdminDto.email}'`;
+      updateColumn = `"email"='${updateAdminDto.email}'`;
     }
     if (updateAdminDto?.name && updateAdminDto.name !== adminToUpdate.name)
-      updateColumn = `${updateColumn ? `${updateColumn}, ` : ''}"name" = '${updateAdminDto.name}'`;
+      updateColumn = `${updateColumn ? `${updateColumn}, ` : ''}"name"='${updateAdminDto.name}'`;
     if (updateAdminDto?.password) {
       const { hash } = await this.hashService.generateAndHashPassword(
         updateAdminDto.password,
       );
-      updateColumn = `${updateColumn ? `${updateColumn}, ` : ''}"password" = '${hash}'`;
+      updateColumn = `${updateColumn ? `${updateColumn}, ` : ''}"password"='${hash}'`;
     }
 
     if (!updateColumn) return adminToUpdate;
+
+    updateColumn = updateColumn + `, "updatedAt"=now()`;
 
     return await this.databaseService
       .$executeRawUnsafe(

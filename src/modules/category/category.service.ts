@@ -1,11 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { DatabaseService } from 'src/core/database/database.service';
 
 @Injectable()
 export class CategoryService {
+  constructor(private readonly databaseService: DatabaseService) {}
+
   create(createCategoryDto: CreateCategoryDto) {
-    return 'This action adds a new category';
+    return this.databaseService.category.create({ data: createCategoryDto });
   }
 
   findAll() {
@@ -17,6 +20,7 @@ export class CategoryService {
   }
 
   update(id: number, updateCategoryDto: UpdateCategoryDto) {
+    console.log(updateCategoryDto);
     return `This action updates a #${id} category`;
   }
 
