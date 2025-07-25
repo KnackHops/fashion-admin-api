@@ -7,7 +7,7 @@ async function bootstrap() {
     logger: ['error', 'fatal', 'log', 'warn', 'debug', 'verbose'],
   });
   app.enableCors();
-  app.setGlobalPrefix('admin/api');
+  app.setGlobalPrefix('/api');
 
   const { httpAdapter } = app.get(HttpAdapterHost);
   app.useGlobalFilters(new AllExceptionsFilter(httpAdapter));
