@@ -11,4 +11,4 @@ export const passwordNotMatchErr = 'Password does not match.';
 
 // User Related Error Messages //
 export const userExistsErr = 'User already exists.';
-export const userNotFoundErr = 'User Not Found.';
+export const userNotFoundErr = 'User not found.';

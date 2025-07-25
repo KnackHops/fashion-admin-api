@@ -74,20 +74,15 @@ export class UserService {
       throw new NotFoundException(userNotFoundErr);
     }
 
-    let password = user.password;
-
-    if (updateUserDto?.password) {
-      password = await this.hashService.hashPassword(updateUserDto.password);
-    }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...data } = updateUserDto;
+    // omit password for the update method
 
     return this.databaseService.user.update({
       where: {
         id,
       },
-      data: {
-        ...updateUserDto,
-        password,
-      },
+      data,
     });
   }
 

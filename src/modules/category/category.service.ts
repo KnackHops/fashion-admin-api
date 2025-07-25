@@ -7,7 +7,9 @@ import { DatabaseService } from 'src/core/database/database.service';
 export class CategoryService {
   constructor(private readonly databaseService: DatabaseService) {}
 
-  create(createCategoryDto: CreateCategoryDto) {
+  async create(createCategoryDto: CreateCategoryDto) {
+    const name = createCategoryDto.name.toLowerCase();
+
     return this.databaseService.category.create({ data: createCategoryDto });
   }
 
@@ -16,7 +18,7 @@ export class CategoryService {
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} category`;
+    return id;
   }
 
   update(id: number, updateCategoryDto: UpdateCategoryDto) {

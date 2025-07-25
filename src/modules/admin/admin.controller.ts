@@ -15,6 +15,7 @@ import { AdminService } from './admin.service';
 // import { UpdateAdminDto } from './dto/update-admin.dto';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
+import { UpdatePasswordDto } from './dto/update-password.dto';
 
 @Controller('admin')
 export class AdminController {
@@ -29,14 +30,23 @@ export class AdminController {
   findAll(
     @Query('page', new ParseIntPipe({ optional: true })) page?: number,
     @Query('perPage', new ParseIntPipe({ optional: true })) perPage?: number,
+    @Query('search') search?: string,
   ) {
-    return this.adminService.findAll(page, perPage);
+    return this.adminService.findAll(page, perPage, search);
   }
 
   @Get(':identifier')
   findOne(@Param('identifier') identifier: string) {
     // explicitly declare showPassword is false
     return this.adminService.findOne(identifier, false);
+  }
+
+  @Patch('change-password/:id')
+  updatePassword(
+    @Param('id', ParseIntPipe) id: number,
+    @Body(ValidationPipe) updatePasswordDto: UpdatePasswordDto,
+  ) {
+    return this.adminService.updatePassword(id, updatePasswordDto);
   }
 
   @Patch(':id')

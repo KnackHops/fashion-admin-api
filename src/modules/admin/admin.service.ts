@@ -2,6 +2,7 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
@@ -9,11 +10,13 @@ import { Admin } from '../../../generated/prisma';
 import { DatabaseService } from 'src/core/database/database.service';
 import {
   emailExistsErr,
+  passwordNotMatchErr,
   userExistsErr,
   userNotFoundErr,
 } from 'src/common/constants';
 import { PrismaClientKnownRequestError } from 'generated/prisma/runtime/library';
 import { HashService } from 'src/common/services/auth/hash.service';
+import { UpdatePasswordDto } from './dto/update-password.dto';
 
 @Injectable()
 export class AdminService {
@@ -53,15 +56,17 @@ export class AdminService {
       });
   }
 
-  findAll(page?: number, perPage?: number) {
+  findAll(page?: number, perPage?: number, search?: string) {
     let actualPage = 0;
     const actualPerPage = perPage ?? 10;
 
     if (page) if (page > 0) actualPage = page - 1;
 
     const offset = actualPage * actualPerPage;
-    return this.databaseService
-      .$queryRaw`SELECT "id", "createdAt", "updatedAt", "name", "email", "status" FROM "Admin" a ORDER BY a.id ASC LIMIT ${actualPerPage} OFFSET ${offset}`;
+
+    return this.databaseService.$queryRawUnsafe(
+      `SELECT "id", "createdAt", "updatedAt", "name", "email", "status" FROM "Admin" a WHERE a.name LIKE '%${search || ''}%' OR a.email LIKE '%${search || ''}%' ORDER BY a.id ASC LIMIT ${actualPerPage} OFFSET ${offset}`,
+    );
   }
 
   async findOne(identifier: string, showPassword?: boolean) {
@@ -90,6 +95,32 @@ export class AdminService {
     return admin;
   }
 
+  async updatePassword(id: number, updatePasswordDto: UpdatePasswordDto) {
+    const adminToUpdate = await this.findOne(`${id}`, true);
+
+    if (!adminToUpdate) {
+      throw new NotFoundException(userNotFoundErr);
+    }
+
+    if (
+      !(await this.hashService.comparePassword(
+        updatePasswordDto.previousPassword,
+        adminToUpdate.password,
+      ))
+    ) {
+      throw new UnauthorizedException(passwordNotMatchErr);
+    }
+
+    const newPassword = await this.hashService.hashPassword(
+      updatePasswordDto.password,
+    );
+
+    return this.databaseService
+      .$queryRaw`UPDATE "Admin" a SET "password"=${newPassword}, "updatedAt"=now() WHERE a.id = ${id}`.then(
+      () => this.findOne(`${id}`).catch(() => null),
+    );
+  }
+
   async update(id: number, updateAdminDto: UpdateAdminDto) {
     const adminToUpdate = await this.findOne(`${id}`);
 
@@ -107,12 +138,12 @@ export class AdminService {
     }
     if (updateAdminDto?.name && updateAdminDto.name !== adminToUpdate.name)
       updateColumn = `${updateColumn ? `${updateColumn}, ` : ''}"name"='${updateAdminDto.name}'`;
-    if (updateAdminDto?.password) {
-      const { hash } = await this.hashService.generateAndHashPassword(
-        updateAdminDto.password,
-      );
-      updateColumn = `${updateColumn ? `${updateColumn}, ` : ''}"password"='${hash}'`;
-    }
+    // if (updateAdminDto?.password) {
+    //   const { hash } = await this.hashService.generateAndHashPassword(
+    //     updateAdminDto.password,
+    //   );
+    //   updateColumn = `${updateColumn ? `${updateColumn}, ` : ''}"password"='${hash}'`;
+    // }
 
     if (!updateColumn) return adminToUpdate;
 
