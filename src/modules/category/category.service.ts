@@ -15,7 +15,7 @@ export class CategoryService {
   async create(createCategoryDto: CreateCategoryDto) {
     const name = createCategoryDto.name.toLowerCase();
 
-    const exist = await this.findOne(name);
+    const exist = await this.findOne(name).catch(() => null);
 
     if (exist) {
       throw new ConflictException(categoryExistsErr);
@@ -86,6 +86,21 @@ export class CategoryService {
 
     if (!exist) {
       throw new NotFoundException(categoryNotFoundErr);
+    }
+
+    const categories = await this.databaseService.category.findMany({
+      where: {
+        name: {
+          search: updateCategoryDto.name,
+        },
+        NOT: {
+          id,
+        },
+      },
+    });
+
+    if (categories.length > 0) {
+      throw new ConflictException(categoryExistsErr);
     }
 
     return this.databaseService.category

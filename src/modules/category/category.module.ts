@@ -4,7 +4,8 @@ import { CategoryController } from './category.controller';
 import { DatabaseModule } from 'src/core/database/database.module';
 
 @Module({
-  controllers: [CategoryController, DatabaseModule],
+  imports: [DatabaseModule],
+  controllers: [CategoryController],
   providers: [CategoryService],
 })
 export class CategoryModule {}

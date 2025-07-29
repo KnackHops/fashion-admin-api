@@ -8,6 +8,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './common/services/auth/jwt-auth.guard';
 import { JwtStrategy } from './common/services/auth/jwt.strategy';
 import { UserModule } from './modules/user/user.module';
+import { CategoryModule } from './modules/category/category.module';
 // import { DatabaseModule } from './core/database/database.module';
 
 @Module({
@@ -16,6 +17,7 @@ import { UserModule } from './modules/user/user.module';
     AuthModule,
     AdminModule,
     UserModule,
+    CategoryModule,
   ],
   controllers: [AppController],
   providers: [
