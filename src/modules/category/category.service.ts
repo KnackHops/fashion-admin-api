@@ -1,21 +1,23 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { DatabaseService } from 'src/core/database/database.service';
-import { categoryExistsErr, categoryNotFoundErr } from 'src/common/constants';
+import { categoryExistsErr } from 'src/common/constants';
 
 @Injectable()
 export class CategoryService {
   constructor(private readonly databaseService: DatabaseService) {}
 
   async create(createCategoryDto: CreateCategoryDto) {
-    const name = createCategoryDto.name.toLowerCase();
-
-    const exist = await this.findOne(name).catch(() => null);
+    const exist = await this.databaseService.category.findFirst({
+      where: {
+        name: {
+          contains: createCategoryDto.name,
+          mode: 'insensitive',
+        },
+      },
+      select: { id: true },
+    });
 
     if (exist) {
       throw new ConflictException(categoryExistsErr);
@@ -70,47 +72,46 @@ export class CategoryService {
     if (isNaN(+identifier)) name = identifier;
     else id = +identifier;
 
-    const category = await this.databaseService.category.findFirst({
-      where: { id, name },
+    const category = await this.databaseService.category.findFirstOrThrow({
+      where: {
+        OR: [{ name, id }],
+      },
     });
-
-    if (!category) {
-      throw new NotFoundException(categoryNotFoundErr);
-    }
 
     return category;
   }
 
   async update(id: number, updateCategoryDto: UpdateCategoryDto) {
-    const exist = await this.findOne(`${id}`);
+    const existingCategory =
+      await this.databaseService.category.findFirstOrThrow({
+        where: { id },
+        select: {
+          id: true,
+        },
+      });
 
-    if (!exist) {
-      throw new NotFoundException(categoryNotFoundErr);
-    }
-
-    const categories = await this.databaseService.category.findMany({
+    const category = await this.databaseService.category.findFirst({
       where: {
         name: {
-          search: updateCategoryDto.name,
+          contains: updateCategoryDto.name,
+          mode: 'insensitive',
         },
         NOT: {
-          id,
+          id: existingCategory.id,
         },
       },
     });
 
-    if (categories.length > 0) {
+    if (category) {
       throw new ConflictException(categoryExistsErr);
     }
 
-    return this.databaseService.category
-      .update({
-        data: updateCategoryDto,
-        where: {
-          id,
-        },
-      })
-      .then(() => this.findOne(`${id}`));
+    return await this.databaseService.category.update({
+      data: updateCategoryDto,
+      where: {
+        id,
+      },
+    });
   }
 
   remove(id: number) {

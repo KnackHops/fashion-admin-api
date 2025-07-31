@@ -9,7 +9,6 @@ import {
 import { Prisma } from '../../../../generated/prisma';
 import { Transform } from 'class-transformer';
 import {
-  emailContainSpacesErr,
   passwordContainSpacesErr,
   passwordLengthErr,
   provideValidEmailErr,
@@ -18,10 +17,9 @@ import {
 export class CreateAdminDto
   implements Pick<Prisma.AdminCreateInput, 'email' | 'name' | 'password'>
 {
-  @IsEmail(undefined, { message: provideValidEmailErr })
-  @Matches(/^\S*$/, { message: emailContainSpacesErr })
+  @IsEmail({}, { message: provideValidEmailErr })
   @Transform(({ value }) => {
-    if (typeof value === 'string') return value.toLowerCase();
+    if (typeof value === 'string') return value.toLowerCase().trim();
   })
   email: string;
 

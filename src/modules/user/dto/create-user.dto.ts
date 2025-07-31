@@ -1,5 +1,6 @@
 import { Transform } from 'class-transformer';
 import {
+  IsEmail,
   IsEnum,
   IsInt,
   IsNotEmpty,
@@ -12,6 +13,7 @@ import { $Enums, Prisma } from 'generated/prisma';
 import {
   passwordContainSpacesErr,
   passwordLengthErr,
+  provideValidEmailErr,
 } from 'src/common/constants';
 
 export class CreateUserDto
@@ -39,6 +41,11 @@ export class CreateUserDto
     if (typeof value === 'string') return value.trim();
   })
   name: string;
+
+  @IsEmail({}, { message: provideValidEmailErr })
+  @Transform(({ value }) => {
+    if (typeof value === 'string') return value.toLowerCase().trim();
+  })
   email: string;
 
   @IsString()

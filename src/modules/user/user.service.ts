@@ -16,7 +16,11 @@ export class UserService {
     private readonly hashService: HashService,
   ) {}
   async create(createUserDto: CreateUserDto) {
-    const exists = await this.findOne(createUserDto.email).catch(() => null);
+    const exists = await this.databaseService.user.findFirst({
+      where: {
+        email: createUserDto.email,
+      },
+    });
 
     if (exists) {
       throw new ConflictException(emailExistsErr);
@@ -82,7 +86,19 @@ export class UserService {
     else id = +identifier;
 
     const user = await this.databaseService.user.findFirst({
-      where: { id, email },
+      where: {
+        OR: [
+          {
+            id,
+          },
+          {
+            email: {
+              contains: email,
+              mode: 'insensitive',
+            },
+          },
+        ],
+      },
     });
 
     if (!user) {
@@ -93,24 +109,23 @@ export class UserService {
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
-    const user = await this.findOne(`${id}`);
-
-    if (!user) {
-      throw new NotFoundException(userNotFoundErr);
-    }
+    const user = await this.databaseService.user.findFirstOrThrow({
+      where: { id },
+      select: {
+        id: true,
+      },
+    });
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...data } = updateUserDto;
     // omit password for the update method
 
-    return this.databaseService.user
-      .update({
-        where: {
-          id,
-        },
-        data,
-      })
-      .then(() => this.findOne(`${id}`));
+    return this.databaseService.user.update({
+      where: {
+        id: user.id,
+      },
+      data,
+    });
   }
 
   remove(id: number) {
