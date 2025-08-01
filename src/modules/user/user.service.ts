@@ -1,13 +1,10 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { DatabaseService } from 'src/core/database/database.service';
 import { HashService } from 'src/common/services/auth/hash.service';
-import { emailExistsErr, userNotFoundErr } from 'src/common/constants';
+import { emailExistsErr } from 'src/common/constants';
+import { Prisma } from 'generated/prisma';
 
 @Injectable()
 export class UserService {
@@ -46,30 +43,20 @@ export class UserService {
 
     const skip = actualPage * take;
 
-    const idSearch = search
-      ? isNaN(+search)
-        ? undefined
-        : +search
-      : undefined;
+    const where: Prisma.UserWhereInput = {};
+
+    if (search) {
+      if (isNaN(+search)) {
+        where.email = search;
+        where.name = {
+          contains: search,
+          mode: 'insensitive',
+        };
+      } else where.id = +search;
+    }
 
     return this.databaseService.user.findMany({
-      ...(search || idSearch
-        ? {
-            where: {
-              OR: [
-                {
-                  id: idSearch,
-                },
-                {
-                  name: { search },
-                },
-                {
-                  email: { search },
-                },
-              ],
-            },
-          }
-        : {}),
+      where,
       orderBy: {
         id: 'asc',
       },
@@ -79,31 +66,14 @@ export class UserService {
   }
 
   async findOne(identifier: string) {
-    let id: number | undefined = undefined;
-    let email: string | undefined = undefined;
+    const where: Prisma.UserWhereInput = {};
 
-    if (isNaN(+identifier)) email = identifier;
-    else id = +identifier;
+    if (isNaN(+identifier)) where.email = identifier;
+    else where.id = +identifier;
 
-    const user = await this.databaseService.user.findFirst({
-      where: {
-        OR: [
-          {
-            id,
-          },
-          {
-            email: {
-              contains: email,
-              mode: 'insensitive',
-            },
-          },
-        ],
-      },
+    const user = await this.databaseService.user.findFirstOrThrow({
+      where,
     });
-
-    if (!user) {
-      throw new NotFoundException(userNotFoundErr);
-    }
 
     return user;
   }

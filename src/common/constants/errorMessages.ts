@@ -16,3 +16,7 @@ export const userNotFoundErr = 'User not found.';
 // Category Related Error Messages //
 export const categoryExistsErr = 'Category already exists.';
 export const categoryNotFoundErr = 'Category not found.';
+
+// Material Related Error Messages //
+export const materialExistsErr = 'Material already exists.';
+export const materialNotFoundErr = 'Material not found.';

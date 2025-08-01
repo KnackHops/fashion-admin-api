@@ -3,6 +3,7 @@ import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { DatabaseService } from 'src/core/database/database.service';
 import { categoryExistsErr } from 'src/common/constants';
+import { Prisma } from 'generated/prisma';
 
 @Injectable()
 export class CategoryService {
@@ -12,7 +13,7 @@ export class CategoryService {
     const exist = await this.databaseService.category.findFirst({
       where: {
         name: {
-          contains: createCategoryDto.name,
+          equals: createCategoryDto.name,
           mode: 'insensitive',
         },
       },
@@ -50,7 +51,8 @@ export class CategoryService {
                 },
                 {
                   name: {
-                    search: search,
+                    contains: search,
+                    mode: 'insensitive',
                   },
                 },
               ],
@@ -66,16 +68,17 @@ export class CategoryService {
   }
 
   async findOne(identifier: string) {
-    let id: number | undefined = undefined;
-    let name: string | undefined = undefined;
+    const where: Prisma.CategoryWhereInput = {};
 
-    if (isNaN(+identifier)) name = identifier;
-    else id = +identifier;
+    if (isNaN(+identifier))
+      where.name = {
+        equals: identifier,
+        mode: 'insensitive',
+      };
+    else where.id = +identifier;
 
     const category = await this.databaseService.category.findFirstOrThrow({
-      where: {
-        OR: [{ name, id }],
-      },
+      where,
     });
 
     return category;
@@ -90,7 +93,7 @@ export class CategoryService {
         },
       });
 
-    const category = await this.databaseService.category.findFirst({
+    const conflictingCategory = await this.databaseService.category.findFirst({
       where: {
         name: {
           contains: updateCategoryDto.name,
@@ -100,9 +103,10 @@ export class CategoryService {
           id: existingCategory.id,
         },
       },
+      select: { id: true },
     });
 
-    if (category) {
+    if (conflictingCategory) {
       throw new ConflictException(categoryExistsErr);
     }
 

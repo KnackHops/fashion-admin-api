@@ -6,6 +6,9 @@ import {
   Patch,
   Param,
   Delete,
+  ValidationPipe,
+  Query,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { MaterialService } from './material.service';
 import { CreateMaterialDto } from './dto/create-material.dto';
@@ -16,18 +19,22 @@ export class MaterialController {
   constructor(private readonly materialService: MaterialService) {}
 
   @Post()
-  create(@Body() createMaterialDto: CreateMaterialDto) {
+  create(@Body(ValidationPipe) createMaterialDto: CreateMaterialDto) {
     return this.materialService.create(createMaterialDto);
   }
 
   @Get()
-  findAll() {
-    return this.materialService.findAll();
+  findAll(
+    @Query('page', new ParseIntPipe({ optional: true })) page?: number,
+    @Query('perPage', new ParseIntPipe({ optional: true })) perPage?: number,
+    @Query('search', new ParseIntPipe({ optional: true })) search?: string,
+  ) {
+    return this.materialService.findAll(page, perPage, search);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.materialService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.materialService.findOne(id);
   }
 
   @Patch(':id')

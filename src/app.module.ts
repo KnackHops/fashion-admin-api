@@ -9,6 +9,8 @@ import { JwtAuthGuard } from './common/services/auth/jwt-auth.guard';
 import { JwtStrategy } from './common/services/auth/jwt.strategy';
 import { UserModule } from './modules/user/user.module';
 import { CategoryModule } from './modules/category/category.module';
+import { MaterialModule } from './modules/material/material.module';
+import { ItemModule } from './modules/item/item.module';
 // import { DatabaseModule } from './core/database/database.module';
 
 @Module({
@@ -18,6 +20,8 @@ import { CategoryModule } from './modules/category/category.module';
     AdminModule,
     UserModule,
     CategoryModule,
+    MaterialModule,
+    ItemModule,
   ],
   controllers: [AppController],
   providers: [
