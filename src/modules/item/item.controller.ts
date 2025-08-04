@@ -33,7 +33,7 @@ export class ItemController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.itemService.findOne(+id);
+    return this.itemService.findOne(id);
   }
 
   // @Patch(':id')
