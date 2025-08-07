@@ -11,7 +11,7 @@ export class LoginDto {
   @IsEmail(undefined, { message: provideValidEmailErr })
   @Matches(/^\S*$/, { message: emailContainSpacesErr })
   @Transform(({ value }) => {
-    if (typeof value === 'string') return value.toLowerCase();
+    if (typeof value === 'string') return value.toLowerCase().trim();
   })
   email: string;
 
