@@ -109,8 +109,8 @@ model User {
   email          String           @unique
   profileImage   String?
   password       String
-  age            Int
-  gender         EGender
+  age            Int?
+  gender         EGender?
   height         Float?
   chest          Float?
   shoulder       Float?
