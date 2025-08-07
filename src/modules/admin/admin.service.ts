@@ -119,8 +119,6 @@ export class AdminService {
       .$queryRaw`UPDATE "Admin" a SET "password"=${newPassword}, "updatedAt"=now() WHERE a.id = ${id}`.then(
       () => this.findOne(`${id}`).catch(() => null),
     );
-
-    return;
   }
 
   async update(id: number, updateAdminDto: UpdateAdminDto) {

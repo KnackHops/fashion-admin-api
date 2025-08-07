@@ -93,6 +93,6 @@ export class MaterialService {
   }
 
   remove(id: number) {
-    return `This action removes a #${id} material`;
+    return this.databaseService.material.delete({ where: { id } });
   }
 }

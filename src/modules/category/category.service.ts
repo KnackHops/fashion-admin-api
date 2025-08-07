@@ -118,7 +118,7 @@ export class CategoryService {
     });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} category`;
+  async remove(id: number) {
+    return await this.databaseService.category.delete({ where: { id } });
   }
 }
