@@ -47,18 +47,18 @@ model Item {
   id                    Int            @id @default(autoincrement())
   createdAt             DateTime       @default(now())
   updatedAt             DateTime       @updatedAt()
-  materialId            Int
+  materialId            Int?
   categoryId            Int
   userId                Int
   name                  String
   sku                   String?
-  brand                 String
+  brand                 String?
   fit                   EFit
   color                 String
   imageUrl              String?
   additionalDescription String?
   FavoriteItem          FavoriteItem[]
-  Material              Material       @relation(fields: [materialId], references: [id])
+  Material              Material?      @relation(fields: [materialId], references: [id])
   Category              Category       @relation(fields: [categoryId], references: [id])
   User                  User           @relation(fields: [userId], references: [id])
   OutfitItem            OutfitItem[]
