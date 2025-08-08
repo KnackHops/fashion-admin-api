@@ -59,8 +59,8 @@ model Item {
   additionalDescription String?
   FavoriteItem          FavoriteItem[]
   Material              Material?      @relation(fields: [materialId], references: [id])
-  Category              Category       @relation(fields: [categoryId], references: [id])
-  User                  User           @relation(fields: [userId], references: [id])
+  Category              Category?      @relation(fields: [categoryId], references: [id])
+  User                  User?          @relation(fields: [userId], references: [id])
   OutfitItem            OutfitItem[]
 }
 
